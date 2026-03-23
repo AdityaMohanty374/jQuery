@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>jQuery Dynamic Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f2ee;
+      --surface: #ffffff;
+      --text: #1c1b18;
+      --muted: #6b6a65;
+      --border: #e2dfd8;
+      --accent: #d4450c;
+      --accent2: #1d6fa4;
+      --radius: 14px;
+      --shadow: 0 2px 16px rgba(0,0,0,0.06);
+    }
+    body.dark {
+      --bg: #111110;
+      --surface: #1c1b18;
+      --text: #edecea;
+      --muted: #9c9a95;
+      --border: #2a2925;
+      --shadow: 0 2px 16px rgba(0,0,0,0.4);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ── Navbar ── */
+    #navbar {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+      transition: background 0.3s, border 0.3s, box-shadow 0.3s;
+    }
+    #navbar.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.1); }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 1.3rem;
+      color: var(--text); text-decoration: none;
+    }
+    .logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 6px; align-items: center; }
+    .nav-links a {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600; font-size: 0.8rem;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      color: var(--muted); text-decoration: none;
+      padding: 6px 10px; border-radius: 8px;
+      transition: color 0.2s, background 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); background: var(--border); }
+    #theme-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: none; cursor: pointer;
+      background: var(--border); color: var(--text);
+      font-size: 1rem; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, color 0.2s;
+    }
+    #theme-btn:hover { background: var(--accent); color: #fff; }
+
+    /* ── Layout ── */
+    main { max-width: 780px; margin: 0 auto; padding: 48px 24px 80px; }
+    section { margin-bottom: 40px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      box-shadow: var(--shadow);
+      transition: background 0.3s, border 0.3s;
+    }
+    .section-tag {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 0.7rem;
+      text-transform: uppercase; letter-spacing: 3px;
+      color: var(--accent); margin-bottom: 4px;
+    }
+    h2 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 1.35rem;
+      letter-spacing: -0.3px; color: var(--text);
+      margin-bottom: 16px;
+    }
+    p { color: var(--muted); line-height: 1.75; font-size: 0.95rem; }
+
+    /* ── 1. Counter ── */
+    .counter-display {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 4rem;
+      color: var(--accent); text-align: center;
+      margin: 20px 0; line-height: 1;
+      transition: transform 0.1s;
+    }
+    .counter-display.bump { transform: scale(1.12); }
+    .btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 0.85rem; padding: 10px 20px;
+      border-radius: 999px; border: 2px solid transparent;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .btn-primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .btn-primary:hover { background: var(--accent); border-color: var(--accent); color: #fff; transform: translateY(-2px); }
+    .btn-outline { background: transparent; color: var(--text); border-color: var(--border); }
+    .btn-outline:hover { border-color: var(--text); transform: translateY(-2px); }
+    .btn-danger { background: transparent; color: var(--accent); border-color: var(--accent); }
+    .btn-danger:hover { background: var(--accent); color: #fff; transform: translateY(-2px); }
+
+    /* ── 2. Tabs ── */
+    .tab-nav { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+    .tab-btn {
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px;
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); padding: 10px 14px;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tab-btn.active { color: var(--text); border-bottom-color: var(--accent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .tab-panel p { color: var(--muted); }
+
+    /* ── 3. Todo list ── */
+    .todo-input-row { display: flex; gap: 10px; margin-bottom: 16px; }
+    #todo-input {
+      flex: 1; padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px; font-size: 0.92rem;
+      background: var(--bg); color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      outline: none; transition: border-color 0.2s;
+    }
+    #todo-input:focus { border-color: var(--accent); }
+    #todo-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    #todo-list li {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; transition: all 0.2s;
+    }
+    #todo-list li.done .todo-text { text-decoration: line-through; color: var(--muted); }
+    #todo-list li .check-btn {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 2px solid var(--border); background: none; cursor: pointer;
+      flex-shrink: 0; transition: background 0.2s, border-color 0.2s;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 0.75rem;
+    }
+    #todo-list li.done .check-btn { background: var(--accent); border-color: var(--accent); }
+    .todo-text { flex: 1; font-size: 0.92rem; color: var(--text); transition: color 0.2s; }
+    .del-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 1rem; transition: color 0.2s;
+    }
+    .del-btn:hover { color: var(--accent); }
+    #todo-empty { color: var(--muted); font-size: 0.88rem; text-align: center; padding: 20px 0; display: none; }
+
+    /* ── 4. Accordion ── */
+    .accordion-item { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
+    .acc-header {
+      width: 100%; background: var(--bg); border: none; cursor: pointer;
+      padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem;
+      color: var(--text); text-align: left; transition: background 0.2s;
+    }
+    .acc-header:hover { background: var(--border); }
+    .acc-icon { font-size: 1rem; transition: transform 0.3s; line-height: 1; }
+    .accordion-item.open .acc-icon { transform: rotate(45deg); }
+    .acc-body { display: none; padding: 0 18px 16px; background: var(--bg); }
+    .acc-body p { font-size: 0.9rem; color: var(--muted); line-height: 1.7; }
+
+    /* ── 5. Form validation ── */
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px; }
+    input[type="text"], input[type="email"], textarea {
+      width: 100%; padding: 10px 14px;
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 0.92rem; background: var(--bg); color: var(--text);
+      font-family: 'DM Sans', sans-serif; outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus { border-color: var(--accent2); }
+    input.error, textarea.error { border-color: var(--accent); }
+    input.success, textarea.success { border-color: #2e9e5c; }
+    .field-msg { font-size: 0.78rem; margin-top: 4px; display: none; }
+    .field-msg.error { color: var(--accent); display: block; }
+    .field-msg.success { color: #2e9e5c; display: block; }
+    #form-toast {
+      display: none; padding: 12px 18px;
+      background: #1a7a42; color: #fff;
+      border-radius: 10px; font-size: 0.88rem;
+      margin-top: 12px; font-family: 'Syne', sans-serif; font-weight: 600;
+    }
+
+    /* ── Scroll fade ── */
+    .scroll-reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.5s ease, transform 0.5s ease; }
+    .scroll-reveal.visible { opacity: 1; transform: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav id="navbar">
+    <a class="logo" href="#">jQ<span>.</span></a>
+    <div class="nav-links">
+      <a href="#counter">Counter</a>
+      <a href="#tabs">Tabs</a>
+      <a href="#todo">Todo</a>
+      <a href="#accordion">Accordion</a>
+      <a href="#form">Form</a>
+      <button id="theme-btn" title="Toggle theme">🌙</button>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- ── 1. Counter ── -->
+    <section id="counter" class="scroll-reveal">
+      <div class="card">
+        <div class="section-tag">01 — Events &amp; DOM</div>
+        <h2>Click Counter</h2>
+        <div class="counter-display" id="count">0</div>
+        <div class="btn-row">
+          <button class="btn btn-outline" id="decrement">− Decrement</button>
+          <button class="btn btn-primary" id="increment">+ Increment</button>
+          <button class="btn btn-danger" id="reset">Reset</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 2. Tabs ── -->
+    <section id="tabs" class="scroll-reveal">
+      <div class="card">
+        <div class="section-tag">02 — Show / Hide</div>
+        <h2>Tabbed Content</h2>
+        <div class="tab-nav">
+          <button class="tab-btn active" data-tab="html">HTML</button>
+          <button class="tab-btn" data-tab="css">CSS</button>
+          <button class="tab-btn" data-tab="js">JavaScript</button>
+          <button class="tab-btn" data-tab="jquery">jQuery</button>
+        </div>
+        <div class="tab-panel active" id="tab-html">
+          <p>HTML is the backbone of the web. It defines the <strong>structure and content</strong> of a page using elements like headings, paragraphs, links, images, and forms.</p>
+        </div>
+        <div class="tab-panel" id="tab-css">
+          <p>CSS controls the <strong>visual presentation</strong> of HTML elements — colors, typography, spacing, layout, and animations. It separates design from content.</p>
+        </div>
+        <div class="tab-panel" id="tab-js">
+          <p>JavaScript adds <strong>interactivity and logic</strong> to the browser. It can manipulate the DOM, respond to user events, fetch data from APIs, and much more.</p>
+        </div>
+        <div class="tab-panel" id="tab-jquery">
+          <p>jQuery is a fast, lightweight library that wraps browser APIs into a simple, expressive syntax — making DOM selection, events, and AJAX much easier to write.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 3. Todo list ── -->
+    <section id="todo" class="scroll-reveal">
+      <div class="card">
+        <div class="section-tag">03 — Dynamic DOM</div>
+        <h2>Todo List</h2>
+        <div class="todo-input-row">
+          <input type="text" id="todo-input" placeholder="Add a new task…" maxlength="80">
+          <button class="btn btn-primary" id="add-todo">Add</button>
+        </div>
+        <ul id="todo-list"></ul>
+        <p id="todo-empty">No tasks yet — add one above!</p>
+      </div>
+    </section>
+
+    <!-- ── 4. Accordion ── -->
+    <section id="accordion" class="scroll-reveal">
+      <div class="card">
+        <div class="section-tag">04 — Animate &amp; Toggle</div>
+        <h2>FAQ Accordion</h2>
+        <div class="accordion-item">
+          <button class="acc-header">What is jQuery? <span class="acc-icon">+</span></button>
+          <div class="acc-body"><p>jQuery is a JavaScript library released in 2006 that dramatically simplifies DOM manipulation, event handling, AJAX calls, and animations with a concise, chainable syntax.</p></div>
+        </div>
+        <div class="accordion-item">
+          <button class="acc-header">Is jQuery still relevant? <span class="acc-icon">+</span></button>
+          <div class="acc-body"><p>Absolutely. jQuery powers millions of websites and is still actively maintained. It's especially useful for rapid prototyping and for understanding the browser APIs it wraps.</p></div>
+        </div>
+        <div class="accordion-item">
+          <button class="acc-header">How do I include jQuery? <span class="acc-icon">+</span></button>
+          <div class="acc-body"><p>Add a single <code>&lt;script&gt;</code> tag pointing to the jQuery CDN before your own scripts. Everything then becomes available through the global <code>$</code> function.</p></div>
+        </div>
+        <div class="accordion-item">
+          <button class="acc-header">What is <code>$(document).ready()</code>? <span class="acc-icon">+</span></button>
+          <div class="acc-body"><p>It ensures your code runs only after the full DOM is loaded and ready to be manipulated. The shorthand version is simply <code>$(function() { ... })</code>.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 5. Form validation ── -->
+    <section id="form" class="scroll-reveal">
+      <div class="card">
+        <div class="section-tag">05 — Form Validation</div>
+        <h2>Contact Form</h2>
+        <form id="contact-form" novalidate>
+          <div class="form-group">
+            <label for="f-name">Name</label>
+            <input type="text" id="f-name" placeholder="Your full name">
+            <div class="field-msg" id="msg-name"></div>
+          </div>
+          <div class="form-group">
+            <label for="f-email">Email</label>
+            <input type="email" id="f-email" placeholder="you@example.com">
+            <div class="field-msg" id="msg-email"></div>
+          </div>
+          <div class="form-group">
+            <label for="f-msg">Message</label>
+            <textarea id="f-msg" rows="3" placeholder="Write something…"></textarea>
+            <div class="field-msg" id="msg-msg"></div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%">Send Message</button>
+          <div id="form-toast">✓ Message sent! We'll be in touch soon.</div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- jQuery CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+
+  <script>
+  $(function () {
+
+    // ────────────────────────────────────────────────────────────────
+    // THEME TOGGLE
+    // ────────────────────────────────────────────────────────────────
+    var isDark = localStorage.getItem('theme') === 'dark';
+
+    function applyTheme(dark) {
+      $('body').toggleClass('dark', dark);
+      $('#theme-btn').text(dark ? '☀️' : '🌙');
+    }
+
+    applyTheme(isDark);
+
+    $('#theme-btn').on('click', function () {
+      isDark = !isDark;
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      applyTheme(isDark);
+    });
+
+    // ────────────────────────────────────────────────────────────────
+    // NAVBAR SHADOW ON SCROLL
+    // ────────────────────────────────────────────────────────────────
+    $(window).on('scroll', function () {
+      $('#navbar').toggleClass('scrolled', $(this).scrollTop() > 10);
+    });
+
+    // ────────────────────────────────────────────────────────────────
+    // SMOOTH SCROLL
+    // ────────────────────────────────────────────────────────────────
+    $('a[href^="#"]').on('click', function (e) {
+      e.preventDefault();
+      var target = $($(this).attr('href'));
+      if (target.length) {
+        $('html, body').animate({ scrollTop: target.offset().top - 72 }, 400);
+      }
+    });
+
+    // ────────────────────────────────────────────────────────────────
+    // SCROLL REVEAL
+    // ────────────────────────────────────────────────────────────────
+    function checkReveal() {
+      $('.scroll-reveal:not(.visible)').each(function () {
+        var top = $(this).offset().top;
+        if (top < $(window).scrollTop() + $(window).height() - 60) {
+          $(this).addClass('visible');
+        }
+      });
+    }
+    $(window).on('scroll', checkReveal);
+    checkReveal(); // run on load
+
+    // ────────────────────────────────────────────────────────────────
+    // 1. COUNTER
+    // ────────────────────────────────────────────────────────────────
+    var count = 0;
+
+    function updateCount(val) {
+      count = val;
+      $('#count').text(count).addClass('bump');
+      setTimeout(function () { $('#count').removeClass('bump'); }, 120);
+    }
+
+    $('#increment').on('click', function () { updateCount(count + 1); });
+    $('#decrement').on('click', function () { updateCount(count - 1); });
+    $('#reset').on('click',     function () { updateCount(0); });
+
+    // ────────────────────────────────────────────────────────────────
+    // 2. TABS
+    // ────────────────────────────────────────────────────────────────
+    $('.tab-btn').on('click', function () {
+      var tab = $(this).data('tab');
+
+      // Update button state
+      $('.tab-btn').removeClass('active');
+      $(this).addClass('active');
+
+      // Show correct panel
+      $('.tab-panel').removeClass('active').hide();
+      $('#tab-' + tab).addClass('active').fadeIn(200);
+    });
+
+    // ────────────────────────────────────────────────────────────────
+    // 3. TODO LIST
+    // ────────────────────────────────────────────────────────────────
+    function syncEmpty() {
+      var isEmpty = $('#todo-list li').length === 0;
+      $('#todo-empty').toggle(isEmpty);
+    }
+
+    function addTodo(text) {
+      text = $.trim(text);
+      if (!text) return;
+
+      var $li = $('<li>').html(
+        '<button class="check-btn" title="Mark done">✓</button>' +
+        '<span class="todo-text">' + $('<span>').text(text).html() + '</span>' +
+        '<button class="del-btn" title="Delete">✕</button>'
+      ).hide();
+
+      $('#todo-list').append($li);
+      $li.slideDown(200);
+      $('#todo-input').val('').focus();
+      syncEmpty();
+    }
+
+    $('#add-todo').on('click', function () {
+      addTodo($('#todo-input').val());
+    });
+
+    $('#todo-input').on('keydown', function (e) {
+      if (e.key === 'Enter') addTodo($(this).val());
+    });
+
+    // Toggle done (event delegation — works on dynamic elements)
+    $('#todo-list').on('click', '.check-btn', function () {
+      $(this).closest('li').toggleClass('done');
+    });
+
+    // Delete item
+    $('#todo-list').on('click', '.del-btn', function () {
+      $(this).closest('li').slideUp(200, function () {
+        $(this).remove();
+        syncEmpty();
+      });
+    });
+
+    syncEmpty(); // initial state
+
+    // ────────────────────────────────────────────────────────────────
+    // 4. ACCORDION
+    // ────────────────────────────────────────────────────────────────
+    $('.acc-header').on('click', function () {
+      var $item = $(this).closest('.accordion-item');
+      var isOpen = $item.hasClass('open');
+
+      // Close all
+      $('.accordion-item').removeClass('open').find('.acc-body').slideUp(250);
+
+      // Open clicked (if it was closed)
+      if (!isOpen) {
+        $item.addClass('open').find('.acc-body').slideDown(250);
+      }
+    });
+
+    // ────────────────────────────────────────────────────────────────
+    // 5. FORM VALIDATION
+    // ────────────────────────────────────────────────────────────────
+    function setField($input, $msg, type, message) {
+      $input.removeClass('error success').addClass(type);
+      $msg.removeClass('error success').addClass(type).text(message);
+    }
+
+    function validateName() {
+      var val = $.trim($('#f-name').val());
+      if (!val) {
+        setField($('#f-name'), $('#msg-name'), 'error', 'Name is required.');
+        return false;
+      }
+      if (val.length < 2) {
+        setField($('#f-name'), $('#msg-name'), 'error', 'Name must be at least 2 characters.');
+        return false;
+      }
+      setField($('#f-name'), $('#msg-name'), 'success', '✓ Looks good!');
+      return true;
+    }
+
+    function validateEmail() {
+      var val = $.trim($('#f-email').val());
+      var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!val) {
+        setField($('#f-email'), $('#msg-email'), 'error', 'Email is required.');
+        return false;
+      }
+      if (!re.test(val)) {
+        setField($('#f-email'), $('#msg-email'), 'error', 'Enter a valid email address.');
+        return false;
+      }
+      setField($('#f-email'), $('#msg-email'), 'success', '✓ Valid email.');
+      return true;
+    }
+
+    function validateMessage() {
+      var val = $.trim($('#f-msg').val());
+      if (!val) {
+        setField($('#f-msg'), $('#msg-msg'), 'error', 'Message cannot be empty.');
+        return false;
+      }
+      if (val.length < 10) {
+        setField($('#f-msg'), $('#msg-msg'), 'error', 'Message too short (min 10 chars).');
+        return false;
+      }
+      setField($('#f-msg'), $('#msg-msg'), 'success', '✓ Message looks great.');
+      return true;
+    }
+
+    // Live validation on blur
+    $('#f-name').on('blur', validateName);
+    $('#f-email').on('blur', validateEmail);
+    $('#f-msg').on('blur', validateMessage);
+
+    // Submit
+    $('#contact-form').on('submit', function (e) {
+      e.preventDefault();
+      var ok = validateName() & validateEmail() & validateMessage();
+      if (ok) {
+        $('#form-toast').hide().fadeIn(300);
+        $(this)[0].reset();
+        $('.form-group input, .form-group textarea').removeClass('error success');
+        $('.field-msg').removeClass('error success').text('');
+        setTimeout(function () { $('#form-toast').fadeOut(400); }, 3500);
+      }
+    });
+
+  });
+  </script>
+</body>
+</html>
